@@ -1,5 +1,4 @@
-var path = require('path')
-var webpack = require('webpack')
+const path = require('path')
 
 module.exports = {
 	context : __dirname,
@@ -9,9 +8,6 @@ module.exports = {
 	output : {
 		path : path.resolve(__dirname, 'build'),
 		filename : '[name].js',
-		sourceMapFilename : '[file].map',
-		library : 'Midi',
-		libraryExport : 'Midi',
 		libraryTarget : 'umd',
 		globalObject: "typeof self !== 'undefined' ? self : this"
 	},
@@ -27,5 +23,5 @@ module.exports = {
 			}
 		]
 	},
-	devtool: 'inline-source-map'
+	devtool: 'source-map'
 }

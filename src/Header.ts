@@ -1,5 +1,5 @@
+import { MidiData } from "midi-file";
 import { search } from "./BinarySearch";
-import { MidiData } from "./midi-file";
 
 const privatePPQMap = new WeakMap<Header, number>();
 
@@ -27,6 +27,9 @@ export interface KeySignatureEvent {
 	scale: string;
 }
 
+/**
+ * @hidden
+ */
 export const keySignatureKeys = ["Cb", "Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#", "C#"];
 
 /** The parsed midi file header */
@@ -55,7 +58,7 @@ export class Header {
 	/**
 	 * The name of the midi file
 	 */
-	name: string = "";
+	name = "";
 
 	constructor(midiData?: MidiData) {
 		// look through all the tracks for tempo changes
@@ -69,13 +72,13 @@ export class Header {
 				if (event.meta) {
 					if (event.type === "timeSignature") {
 						this.timeSignatures.push({
-							ticks : event.absoluteTime,
-							timeSignature : [event.numerator, event.denominator],
+							ticks: event.absoluteTime,
+							timeSignature: [event.numerator, event.denominator],
 						});
 					} else if (event.type === "setTempo") {
 						this.tempos.push({
-							bpm : 60000000 / event.microsecondsPerBeat,
-							ticks : event.absoluteTime,
+							bpm: 60000000 / event.microsecondsPerBeat,
+							ticks: event.absoluteTime,
 						});
 					} else if (event.type === "keySignature") {
 						this.keySignatures.push({
@@ -188,17 +191,17 @@ export class Header {
 	 */
 	toJSON(): HeaderJSON {
 		return {
-			keySignatures : this.keySignatures,
-			meta : this.meta,
-			name : this.name,
-			ppq : this.ppq,
-			tempos : this.tempos.map(t => {
+			keySignatures: this.keySignatures,
+			meta: this.meta,
+			name: this.name,
+			ppq: this.ppq,
+			tempos: this.tempos.map(t => {
 				return {
-					bpm : t.bpm,
-					ticks : t.ticks,
+					bpm: t.bpm,
+					ticks: t.ticks,
 				};
 			}),
-			timeSignatures : this.timeSignatures,
+			timeSignatures: this.timeSignatures,
 		};
 	}
 
@@ -213,6 +216,19 @@ export class Header {
 		this.keySignatures = json.keySignatures.map(t => Object.assign({}, t));
 		this.meta = json.meta.map(t => Object.assign({}, t));
 		privatePPQMap.set(this, json.ppq);
+		this.update();
+	}
+
+	/**
+	 * Update the tempo of the midi to a single tempo. Will remove and replace
+	 * any other tempos currently set and update all of the event timing.
+	 * @param bpm The tempo in beats per second
+	 */
+	setTempo(bpm: number): void {
+		this.tempos = [{
+			bpm,
+			ticks: 0,
+		}];
 		this.update();
 	}
 }
